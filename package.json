@@ -1,0 +1,9 @@
+{
+  "name": "billing-system",
+  "private": true,
+  "workspaces": ["services/*"],
+  "scripts": {
+    "dev": "docker-compose up --build",
+    "down": "docker-compose down"
+  }
+}

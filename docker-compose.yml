@@ -1,0 +1,138 @@
+version: '3.9'
+
+services:
+  mongo:
+    image: mongo:7
+    container_name: billing-mongo
+    restart: unless-stopped
+    ports:
+      - '27017:27017'
+    volumes:
+      - mongo_data:/data/db
+    networks:
+      - billing-net
+
+  redis:
+    image: redis:7-alpine
+    container_name: billing-redis
+    restart: unless-stopped
+    ports:
+      - '6379:6379'
+    networks:
+      - billing-net
+
+  gateway:
+    build: ./services/gateway
+    container_name: billing-gateway
+    restart: unless-stopped
+    ports:
+      - '3000:3000'
+    env_file: .env
+    depends_on:
+      - mongo
+      - redis
+    networks:
+      - billing-net
+
+  auth-service:
+    build: ./services/auth-service
+    container_name: billing-auth
+    restart: unless-stopped
+    ports:
+      - '3001:3001'
+    env_file: .env
+    depends_on:
+      - mongo
+      - redis
+    networks:
+      - billing-net
+
+  tenant-service:
+    build: ./services/tenant-service
+    container_name: billing-tenant
+    restart: unless-stopped
+    ports:
+      - '3002:3002'
+    env_file: .env
+    depends_on:
+      - mongo
+    networks:
+      - billing-net
+
+  invoice-service:
+    build: ./services/invoice-service
+    container_name: billing-invoice
+    restart: unless-stopped
+    ports:
+      - '3003:3003'
+    env_file: .env
+    depends_on:
+      - mongo
+    networks:
+      - billing-net
+
+  customer-service:
+    build: ./services/customer-service
+    container_name: billing-customer
+    restart: unless-stopped
+    ports:
+      - '3004:3004'
+    env_file: .env
+    depends_on:
+      - mongo
+    networks:
+      - billing-net
+
+  product-service:
+    build: ./services/product-service
+    container_name: billing-product
+    restart: unless-stopped
+    ports:
+      - '3005:3005'
+    env_file: .env
+    depends_on:
+      - mongo
+    networks:
+      - billing-net
+
+  payment-service:
+    build: ./services/payment-service
+    container_name: billing-payment
+    restart: unless-stopped
+    ports:
+      - '3006:3006'
+    env_file: .env
+    depends_on:
+      - mongo
+    networks:
+      - billing-net
+
+  einvoice-service:
+    build: ./services/einvoice-service
+    container_name: billing-einvoice
+    restart: unless-stopped
+    ports:
+      - '3007:3007'
+    env_file: .env
+    depends_on:
+      - mongo
+    networks:
+      - billing-net
+
+  nginx:
+    build: ./nginx
+    container_name: billing-nginx
+    restart: unless-stopped
+    ports:
+      - '80:80'
+    depends_on:
+      - gateway
+    networks:
+      - billing-net
+
+networks:
+  billing-net:
+    driver: bridge
+
+volumes:
+  mongo_data:
